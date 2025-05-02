@@ -7,6 +7,28 @@
 const shopkeepers = {};
 
 /**
+ * Calculates the distance between two coordinates using the Haversine formula.
+ * @param {number} lat1 - Latitude of the first point.
+ * @param {number} lon1 - Longitude of the first point.
+ * @param {number} lat2 - Latitude of the second point.
+ * @param {number} lon2 - Longitude of the second point.
+ * @returns {number} - Distance in kilometers.
+ */
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
+};
+
+/**
  * Creates a new shopkeeper (without database).
  * @param {object} req - The Express request object.
  * @param {object} res - The Express response object.
@@ -137,20 +159,6 @@ exports.findNearbyShopkeepers = (req, res) => {
          if (isNaN(searchRadius) || searchRadius <= 0) {
             return res.status(400).json({ message: 'Invalid radius. Must be a positive number.' });
         }
-        // --- Function to calculate distance between two coordinates (Haversine formula) ---
-        const calculateDistance = (lat1, lon1, lat2, lon2) => {
-            const R = 6371; // Radius of the Earth in kilometers
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2)
-                ;
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const d = R * c; // Distance in kilometers
-            return d;
-        };
 
         // --- Find nearby shopkeepers ---
         const nearbyShopkeepers = Object.values(shopkeepers).filter(shopkeeper => {
@@ -176,3 +184,5 @@ exports.findNearbyShopkeepers = (req, res) => {
         res.status(500).json({ message: 'Failed to retrieve nearby shopkeepers.' });
     }
 };
+
+module.exports.shopkeepers = shopkeepers;

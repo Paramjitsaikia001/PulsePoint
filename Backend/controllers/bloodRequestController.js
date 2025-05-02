@@ -1,4 +1,4 @@
-const BloodRequest = require('../models/BloodRequest'); // Adjust the path to your BloodRequest model
+const BloodRequest = []; // Replace with actual database model when available
 
 exports.createBloodRequest = async (req, res) => {
     try {
