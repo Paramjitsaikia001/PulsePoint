@@ -67,7 +67,7 @@ const jwtMiddleware = expressJwt({
     path: [
         '/api/auth/register',
         '/api/auth/login',
-        // Add any other paths that don't require authentication
+        '/api/auth/forgot-password',
     ],
 });
 

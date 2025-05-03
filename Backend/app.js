@@ -4,8 +4,13 @@ const bloodRoutes = require('./routes/blood');
 const shopkeeperRoutes = require('./routes/shopkeeper');
 const prescriptionRoutes = require('./routes/prescription');
 const { jwtMiddleware } = require('./middleware/authMiddleware');
-// Removed unused PORT variable
+const dotenv = require('dotenv'); 
+
 const app = express();
+
+dotenv.config({
+    path: './.env', // Load environment variables from .env file
+});
 
 app.use(express.json());
 
@@ -22,7 +27,10 @@ app.use('/api/shopkeepers', shopkeeperRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
 
 app.get('/', (_, res) => {
-    res.send('Hello from the P2P Project!');
+  res.send('Hello from the P2P Project!');
 });
 
-export default app;
+// Connect to the database and then start the server
+
+  
+module.exports = { app };
