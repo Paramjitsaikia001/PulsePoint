@@ -25,4 +25,4 @@ app.get('/', (_, res) => {
     res.send('Hello from the P2P Project!');
 });
 
-export default app;
+module.exports = { app };

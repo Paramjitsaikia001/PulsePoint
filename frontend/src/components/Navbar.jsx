@@ -1,6 +1,7 @@
 import React from 'react'
 import { Heart } from "lucide-react"
 import { NavLink } from 'react-router-dom'
+import FindDonor from './FindDonor'
 function Navbar() {
     return (
             <nav className="bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-50">
@@ -17,9 +18,11 @@ function Navbar() {
                             <a href="#" className="text-gray-600 hover:text-red-500 transition-colors">
                                 How It Works
                             </a>
-                            <a href="#" className="text-gray-600 hover:text-red-500 transition-colors">
+                            <NavLink 
+                            to="/find-donor"
+                            className="text-gray-600 hover:text-red-500 transition-colors">
                                 Find Donors
-                            </a>
+                            </NavLink>
                             <a href="#" className="text-gray-600 hover:text-red-500 transition-colors">
                                 About Us
                             </a>

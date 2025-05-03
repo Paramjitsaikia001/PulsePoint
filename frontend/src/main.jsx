@@ -8,6 +8,7 @@ import DonorDashboard from './components/DonorDashboard.jsx';
 import Login from './components/Login.jsx';
 import RecipientDashboard from './components/RecipientDashboard.jsx';
 import Registration from './components/Registration.jsx';
+import FindDonor from './components/FindDonor.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/Login" element={<Login />} />
         <Route path="/Donor" element={<DonorDashboard />} />
         <Route path="/recipientdeshboard" element={<RecipientDashboard />} />
+        <Route path="/find-donor" element={<FindDonor />} />
         {/* Add more routes as needed */}
       </Routes>
     </BrowserRouter>
