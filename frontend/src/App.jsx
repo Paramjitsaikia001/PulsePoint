@@ -6,7 +6,6 @@ import { Heart, Droplet, MapPin, Shield, Search, MessageSquare, Users, Award, Us
 import "./index.css"
 import Navbar from "./components/Navbar"
 
-
 function App() {
   const controls = useAnimation()
   const featuresRef = useRef(null)

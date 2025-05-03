@@ -30,7 +30,4 @@ app.get('/', (_, res) => {
   res.send('Hello from the P2P Project!');
 });
 
-// Connect to the database and then start the server
-
-  
-module.exports = { app };
+export default app;

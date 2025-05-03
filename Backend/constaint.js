@@ -1,1 +1,1 @@
-module.exports.DB_NAME = "PlusePoint";
+module.exports.DB_NAME = "Backend_with_chai";
