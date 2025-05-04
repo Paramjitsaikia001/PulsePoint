@@ -24,6 +24,15 @@ const donorEligibilitySchema = new mongoose.Schema({
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  fullname:{
+    type:String,
+    required:true
+  },
   role: {
     type: String,
     enum: ['user', 'donor', 'admin'],
@@ -31,13 +40,14 @@ const userSchema = new mongoose.Schema({
   },
   name: String,
   email: { type: String, unique: true },
-  phone: { type: String, unique: true,required: true },
-  password: { type: String, required: true },
-  gender: String,
-  dob: Date,
+  phone: { type: String, unique: true, required: true },
+  password: { type: String, required: [true, 'Password is required'] },
+  gender: { type: String, required: true },
+  dob: { type: Date, required: true },
   bloodGroup: { type: String },
   isDonor: { type: Boolean, default: false },
   donorEligibility: { type: donorEligibilitySchema, default: null },
+  refreshToken: { type: String },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

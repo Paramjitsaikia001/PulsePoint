@@ -14,6 +14,8 @@ dotenv.config({
 
 app.use(express.json());
 
+
+
 // Apply JWT middleware to all routes *except* those that don't need authentication
 app.use((req, res, next) => {
   if (['/api/auth/register', '/api/auth/login'].includes(req.path)) {
@@ -30,4 +32,11 @@ app.get('/', (_, res) => {
   res.send('Hello from the P2P Project!');
 });
 
-export default app;
+
+app.use((err, req, res, next) => {
+  if (err.name === 'UnauthorizedError') {
+      return res.status(401).json({ message: 'Authorization token is missing or invalid.' });
+  }
+  next(err);
+});
+module.exports = { app };
