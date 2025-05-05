@@ -24,21 +24,20 @@ const donorEligibilitySchema = new mongoose.Schema({
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
-    role: {
-        type: String,
-        enum: ['user', 'donor', 'admin'],
-        default: 'user'
-    },
-    name: String,
-    email: { type: String, unique: true },
-    phone: { type: String, unique: true, required: true },
-    password: { type: String, required: true },
-    gender: String,
-    dob: Date,
-    bloodGroup: { type: String },
-    isDonor: { type: Boolean, default: false },
-    donorEligibility: { type: donorEligibilitySchema, default: null },
-    refreshToken: { type: String } // Added refreshToken field
+  role: {
+    type: String,
+    enum: ['user', 'donor', 'admin'],
+    default: 'user'
+  },
+  name: String,
+  email: { type: String, unique: true },
+  phone: { type: String, unique: true,required: true },
+  password: { type: String, required: true },
+  gender: String,
+  dob: Date,
+  bloodGroup: { type: String },
+  isDonor: { type: Boolean, default: false },
+  donorEligibility: { type: donorEligibilitySchema, default: null },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

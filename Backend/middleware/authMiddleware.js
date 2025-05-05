@@ -28,16 +28,21 @@ const authorizeAdmin = (req, res, next) => {
  * This uses express-jwt to handle the authentication.
  */
 const jwtMiddleware = expressJwt({
-  secret: secret, // Use the secret key from the environment variable
-  algorithms: ['HS256'], // Specify the algorithm
-  //  getToken: (req) => { //This is the default behavior
-  //   if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-  //     return req.headers.authorization.split(' ')[1];
-  //   } else if (req.query && req.query.token) {
-  //     return req.query.token;
-  //   }
-  //   return null;
-  // },
+    secret: secret,
+    algorithms: ['HS256'],
+    credentialsRequired: true,
+    // Add custom logic to extract the token, by default, it checks "Authorization: Bearer <token>"
+    getToken: function fromHeaderOrQuerystring(req) {
+        if (
+            req.headers.authorization &&
+            req.headers.authorization.split(' ')[0] === 'Bearer'
+        ) {
+            return req.headers.authorization.split(' ')[1];
+        } else if (req.query && req.query.token) {
+            return req.query.token;
+        }
+        return null;
+    },
 }).unless({
   // These paths do not require authentication
   path: [
@@ -47,5 +52,6 @@ const jwtMiddleware = expressJwt({
     // '/api/auth/refresh', //  <--  DO NOT EXCLUDE REFRESH ROUTE.  It needs authentication!
   ],
 });
+
 
 module.exports = { jwtMiddleware, authorizeAdmin };
