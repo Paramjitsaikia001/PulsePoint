@@ -1,10 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-const User = require('../models/usermodel');
+const User = require('../models/User');
 dotenv.config();
 
-const jwtSecretKey = process.env.JWT_SECRET_KEY;
+const jwtSecretKey = process.env.JWT_SECRET;
 const jwtRefreshSecretKey = process.env.JWT_REFRESH_SECRET_KEY;
 
 // Helper Functions
