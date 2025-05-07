@@ -1,10 +1,9 @@
 const express = require('express');
-const bloodRouter = express.Router();
-const bloodRequestController = require('../controllers/bloodRequestController.js');
-const { authenticateUser } = require('../middleware/authMiddleware.js'); // Import the middleware
+const { createBloodRequest, getBloodRequests } = require('../controllers/bloodRequestController'); // Ensure these are imported correctly
+const { authenticateUser } = require('../middleware/authMiddleware');
+const router = express.Router();
 
-bloodRouter.get('/search', bloodRequestController.searchBloodRequests);
-bloodRouter.post('/request', authenticateUser, bloodRequestController.createBloodRequest);
-console.log('Blood requests route is running');
+router.post('/request', authenticateUser, createBloodRequest); // Attach the handler
+// Attach the handler
 
-module.exports = bloodRouter;
+module.exports = router;

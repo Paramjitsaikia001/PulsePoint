@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { Heart, User, Store, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -84,34 +85,15 @@ const Registration = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleRegistration = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        // Store token and user type
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("userType", formData.isDonor ? "donor" : "recipient");
-        setRegistrationComplete(true);
-      } else {
-        setErrors({ form: data.message });
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      setErrors({ form: "An error occurred. Please try again." });
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault()
 
     if (validateForm()) {
-      handleRegistration()
+      // In a real app, you would send this data to your backend
+      console.log("Form submitted:", { userType, ...formData })
+
+      // Show success message
+      setRegistrationComplete(true)
     }
   }
 
@@ -590,4 +572,3 @@ const Registration = () => {
 }
 
 export default Registration
-

@@ -1,56 +1,47 @@
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Heart, AlertCircle, Eye, EyeOff } from "lucide-react"
-import { Link } from "react-router-dom"
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Heart, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import api from '../utils/api';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  })
-  const [errors, setErrors] = useState({})
-  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
-    })
-  }
+    });
+  };
 
-  const validateForm = () => {
-    const newErrors = {}
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.post('/auth/login', formData);
+      const { token, role } = response.data;
 
-    if (!formData.email) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid"
+      // Store token and role in localStorage
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('userRole', role);
+
+      // Redirect based on role
+      if (role === 'recipient') {
+        navigate('/recipient-dashboard');
+      } else if (role === 'donor') {
+        navigate('/donor-dashboard');
+      } else if (role === 'shopkeeper') {
+        navigate('/shopkeeper-dashboard');
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || 'Login failed. Please try again.');
     }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    if (validateForm()) {
-      // In a real app, you would send this data to your backend for authentication
-      console.log("Login form submitted:", formData)
-
-      // Redirect based on user type (this would normally be determined by your backend)
-      // For demo purposes, we'll redirect to the donor dashboard
-      window.location.href = "/donor-dashboard"
-    }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white py-12 px-4 sm:px-6 lg:px-8">
@@ -71,6 +62,12 @@ const Login = () => {
           className="bg-white rounded-3xl shadow-xl overflow-hidden"
         >
           <div className="p-8">
+            {error && (
+              <p className="mb-4 text-xs text-red-500 flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                {error}
+              </p>
+            )}
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -82,14 +79,9 @@ const Login = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors.email ? "border-red-300" : "border-gray-300"} rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  required
                 />
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-500 flex items-center">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {errors.email}
-                  </p>
-                )}
               </div>
 
               <div className="mb-6">
@@ -103,7 +95,8 @@ const Login = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors.password ? "border-red-300" : "border-gray-300"} rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    required
                   />
                   <button
                     type="button"
@@ -117,12 +110,6 @@ const Login = () => {
                     )}
                   </button>
                 </div>
-                {errors.password && (
-                  <p className="mt-1 text-xs text-red-500 flex items-center">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {errors.password}
-                  </p>
-                )}
               </div>
 
               <div className="flex items-center justify-between mb-6">
@@ -218,8 +205,7 @@ const Login = () => {
         </motion.div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
-
+export default Login;

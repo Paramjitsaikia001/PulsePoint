@@ -1,136 +1,96 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const User = require('../models/userModel');
 dotenv.config();
-// Example of an in-memory storage for users (you should replace it with your database logic)
-let users = [];
 
-const jwtSecretKey = process.env.JWT_SECRET_KEY;
-
+// Register a new user
 exports.registerUser = async (req, res) => {
   try {
-    // Extracting data from the request body
-    const {
-      name,
-      userId,
-      email,
-      phoneNo,
-      age,
-      location,
-      isDonor,
-      bloodType,
-      medicalHistory,
-      medicalHistoryDescription,
-      lastBloodDonation,
-      availability,
-      notificationsOn,
-      chatGptUses,
-      password,
-    } = req.body;
+    console.log('Request body:', req.body);
+    const { fullname, username, email, password, phone, dob, gender, role } = req.body;
 
     // Validate required fields
-    if (!name || !userId || !email || !password) {
-      return res.status(400).json({ message: 'Name, User ID, Email, and Password are required.' });
+    if (!fullname || !username || !email || !password || !phone || !dob || !gender || !role) {
+      return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    // If the user is a donor, validate donor-specific fields
-    if (isDonor) {
-      if (!bloodType) {
-        return res.status(400).json({ message: 'Blood Type is required for donors.' });
-      }
-      if (!['yes', 'no'].includes(medicalHistory?.toLowerCase())) {
-        return res.status(400).json({ message: 'Medical History must be "Yes" or "No".' });
-      }
-      if (medicalHistory === 'yes' && !medicalHistoryDescription) {
-        return res.status(400).json({ message: 'Please describe your medical history.' });
-      }
-      if (!lastBloodDonation || !availability) {
-        return res.status(400).json({ message: 'Last Blood Donation and Availability are required for donors.' });
-      }
+    // Check if the role is valid
+    const validRoles = ['recipient', 'donor', 'shopkeeper'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ message: `Invalid role. Allowed roles are: ${validRoles.join(', ')}` });
     }
 
-    // Check if the user already exists by userId or email
-    const existingUser = users.find(user => user.userId === userId || user.email === email);
+    // Check if the email or username already exists
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(409).json({ message: 'User ID or Email already exists.' });
+      return res.status(409).json({ message: 'Email or username already exists.' });
     }
 
-    // Hash the password before storing
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user object
-    const newUser = {
-      name,
-      userId,
+    // Create a new user
+    const newUser = new User({
+      fullname,
+      username,
       email,
-      phoneNo,
-      age,
-      location,
-      isDonor,
-      bloodType,
-      medicalHistory,
-      medicalHistoryDescription,
-      lastBloodDonation,
-      availability,
-      notificationsOn,
-      chatGptUses,
       password: hashedPassword,
-    };
+      phone,
+      dob,
+      gender,
+      role,
+    });
 
-    // Store the user (replace with database logic)
-    users.push(newUser);
-
-    res.status(201).json({ message: 'User registered successfully.', user: newUser });
+    await newUser.save();
+    res.status(201).json({ message: 'User registered successfully.' });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: 'Registration failed.' });
+    console.error('Error registering user:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
 
+// Login a user
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and Password are required.' });
+      return res.status(400).json({ message: 'Email and password are required.' });
     }
 
-    // Find the user by email
-    const user = users.find(u => u.email === email);
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    // Compare the provided password with the stored hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.userId }, jwtSecretKey, { expiresIn: '1h' });
-
-    res.status(200).json({
-      message: 'Login successful.',
-      token,
-      user: {
-        name: user.name,
-        email: user.email,
-        userId: user.userId,
-        isDonor: user.isDonor,
-      },
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY, {
+      expiresIn: '1h',
     });
+
+    res.status(200).json({ message: 'Login successful.', token, role: user.role });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Login failed.' });
+    console.error('Error logging in user:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
 
+// Get all users
 exports.getAllUsers = (req, res) => {
   try {
-    // Replace with actual DB query
-    res.status(200).json(users); // Return all users
+    console.log('Request body:', req.body);
+    User.find({}, (err, users) => {
+      if (err) {
+        console.error('Error fetching users:', err);
+        return res.status(500).json({ message: 'Failed to retrieve users.' });
+      }
+      res.status(200).json(users);
+    });
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Failed to retrieve users.' });

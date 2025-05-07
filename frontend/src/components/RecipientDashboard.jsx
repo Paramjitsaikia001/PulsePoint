@@ -19,12 +19,43 @@ import {
   Plus,
 } from "lucide-react"
 import { Link } from "react-router-dom"
+import Chat from './Chat';
+import axios from 'axios';
+import api from '../utils/api';
 
 const RecipientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedBloodType, setSelectedBloodType] = useState("")
   const [selectedDistance, setSelectedDistance] = useState("")
+  const recipientId = 'recipient123'; // Replace with actual recipient ID
+  const donorId = 'donor456'; // Replace with actual donor ID
+  const [bloodRequest, setBloodRequest] = useState({ bloodGroup: '', location: '', urgency: '' });
+  const [medicineRequest, setMedicineRequest] = useState({ medicineName: '', purpose: '' });
+  const [message, setMessage] = useState('');
+
+  const handleBloodRequest = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/blood/request', bloodRequest);
+      setMessage('Blood request submitted successfully.');
+    } catch {
+      setMessage('Failed to submit blood request.');
+    }
+  };
+
+  const handleMedicineRequest = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.post('http://localhost:5000/api/prescriptions/request', medicineRequest, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessage('Medicine request submitted successfully.');
+    } catch {
+      setMessage('Failed to submit medicine request.');
+    }
+  };
 
   // Mock data for the dashboard
   const nearbyDonors = [
@@ -81,26 +112,6 @@ const RecipientDashboard = () => {
     },
   ]
 
-  const notifications = [
-    {
-      id: 1,
-      type: "match",
-      message: "John D. has agreed to donate blood for your request",
-      time: "2 hours ago",
-    },
-    {
-      id: 2,
-      type: "reminder",
-      message: "Your blood request expires in 2 days",
-      time: "1 day ago",
-    },
-    {
-      id: 3,
-      type: "info",
-      message: "New blood donor available in your area",
-      time: "3 days ago",
-    },
-  ]
 
   const medicines = [
     {
@@ -202,9 +213,8 @@ const RecipientDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-gray-800">{donor.name}</h4>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      donor.status === "available" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                    }`}
+                    className={`text-xs px-2 py-1 rounded-full ${donor.status === "available" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                      }`}
                   >
                     {donor.status === "available" ? "Available" : "Unavailable"}
                   </span>
@@ -286,11 +296,10 @@ const RecipientDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-gray-800">{medicine.name}</h4>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      medicine.availability === "In Stock"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
+                    className={`text-xs px-2 py-1 rounded-full ${medicine.availability === "In Stock"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-yellow-100 text-yellow-800"
+                      }`}
                   >
                     {medicine.availability}
                   </span>
@@ -340,9 +349,8 @@ const RecipientDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-gray-800">{request.hospital}</h4>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                    }`}
+                    className={`text-xs px-2 py-1 rounded-full ${request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                      }`}
                   >
                     {request.status === "fulfilled" ? "Fulfilled" : "Expired"}
                   </span>
@@ -415,9 +423,8 @@ const RecipientDashboard = () => {
                 </div>
                 <div className="text-right">
                   <span
-                    className={`inline-block text-sm px-2 py-1 rounded-full ${
-                      request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                    }`}
+                    className={`inline-block text-sm px-2 py-1 rounded-full ${request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                      }`}
                   >
                     {request.status === "fulfilled" ? "Fulfilled" : "Expired"}
                   </span>
@@ -1066,9 +1073,8 @@ const RecipientDashboard = () => {
               <nav className="space-y-1">
                 <button
                   onClick={() => setActiveTab("dashboard")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
-                    activeTab === "dashboard" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "dashboard" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   <Heart className={`h-5 w-5 mr-3 ${activeTab === "dashboard" ? "text-blue-500" : "text-gray-400"}`} />
                   Dashboard
@@ -1076,9 +1082,8 @@ const RecipientDashboard = () => {
 
                 <button
                   onClick={() => setActiveTab("history")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
-                    activeTab === "history" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "history" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   <Calendar className={`h-5 w-5 mr-3 ${activeTab === "history" ? "text-blue-500" : "text-gray-400"}`} />
                   Request History
@@ -1086,9 +1091,8 @@ const RecipientDashboard = () => {
 
                 <button
                   onClick={() => setActiveTab("messages")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
-                    activeTab === "messages" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "messages" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   <MessageSquare
                     className={`h-5 w-5 mr-3 ${activeTab === "messages" ? "text-blue-500" : "text-gray-400"}`}
@@ -1098,9 +1102,8 @@ const RecipientDashboard = () => {
 
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
-                    activeTab === "profile" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "profile" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   <User className={`h-5 w-5 mr-3 ${activeTab === "profile" ? "text-blue-500" : "text-gray-400"}`} />
                   My Profile
@@ -1108,9 +1111,8 @@ const RecipientDashboard = () => {
 
                 <button
                   onClick={() => setActiveTab("settings")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
-                    activeTab === "settings" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "settings" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   <Settings
                     className={`h-5 w-5 mr-3 ${activeTab === "settings" ? "text-blue-500" : "text-gray-400"}`}
@@ -1141,6 +1143,56 @@ const RecipientDashboard = () => {
             {activeTab === "messages" && renderMessages()}
             {activeTab === "profile" && renderProfile()}
             {activeTab === "settings" && renderSettings()}
+            <Chat senderId={recipientId} receiverId={donorId} />
+            <div className="recipient-dashboard">
+              <h2>Recipient Dashboard</h2>
+              {message && <p>{message}</p>}
+
+              <form onSubmit={handleBloodRequest}>
+                <h3>Submit Blood Request</h3>
+                <input
+                  type="text"
+                  placeholder="Blood Group"
+                  value={bloodRequest.bloodGroup}
+                  onChange={(e) => setBloodRequest({ ...bloodRequest, bloodGroup: e.target.value })}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Location"
+                  value={bloodRequest.location}
+                  onChange={(e) => setBloodRequest({ ...bloodRequest, location: e.target.value })}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Urgency"
+                  value={bloodRequest.urgency}
+                  onChange={(e) => setBloodRequest({ ...bloodRequest, urgency: e.target.value })}
+                  required
+                />
+                <button type="submit">Submit Blood Request</button>
+              </form>
+
+              <form onSubmit={handleMedicineRequest}>
+                <h3>Submit Medicine Request</h3>
+                <input
+                  type="text"
+                  placeholder="Medicine Name"
+                  value={medicineRequest.medicineName}
+                  onChange={(e) => setMedicineRequest({ ...medicineRequest, medicineName: e.target.value })}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Purpose"
+                  value={medicineRequest.purpose}
+                  onChange={(e) => setMedicineRequest({ ...medicineRequest, purpose: e.target.value })}
+                  required
+                />
+                <button type="submit">Submit Medicine Request</button>
+              </form>
+            </div>
           </div>
         </div>
       </main>

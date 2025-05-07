@@ -7,7 +7,7 @@ import MedicalShopDashboard from './components/MedicalShopDashboard.jsx';
 import DonorDashboard from './components/DonorDashboard.jsx';
 import Login from './components/Login.jsx';
 import RecipientDashboard from './components/RecipientDashboard.jsx';
-import Registration from './components/Registration.jsx';
+import Registration from './components/Register.jsx';
 import FindDonor from './components/FindDonor.jsx';
 
 createRoot(document.getElementById('root')).render(
@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')).render(
         {/* Define routes for your pages */}
         <Route path="/" element={<App />} />
         <Route path="/medical-shop-dashboard" element={<MedicalShopDashboard />} />
-        <Route path="/registaion" element={<Registration/>} />
+        <Route path="/registration" element={<Registration/>} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Donor" element={<DonorDashboard />} />
         <Route path="/recipientdeshboard" element={<RecipientDashboard />} />
