@@ -1,96 +1,137 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-const User = require('../models/userModel');
 dotenv.config();
+// Example of an in-memory storage for users (you should replace it with your database logic)
+let users = [];
 
-// Register a new user
+const jwtSecretKey = process.env.JWT_SECRET_KEY;
+
 exports.registerUser = async (req, res) => {
   try {
-    console.log('Request body:', req.body);
-    const { fullname, username, email, password, phone, dob, gender, role } = req.body;
+    // Extracting data from the request body
+    const {
+      name,
+      userId,
+      email,
+      phoneNo,
+      age,
+      location,
+      isDonor,
+      bloodType,
+      medicalHistory,
+      medicalHistoryDescription,
+      lastBloodDonation,
+      availability,
+      notificationsOn,
+      chatGptUses,
+      password,
+    } = req.body;
 
     // Validate required fields
-    if (!fullname || !username || !email || !password || !phone || !dob || !gender || !role) {
-      return res.status(400).json({ message: 'All fields are required.' });
+    if (!name || !userId || !email || !password) {
+      return res.status(400).json({ message: 'Name, User ID, Email, and Password are required.' });
     }
 
-    // Check if the role is valid
-    const validRoles = ['recipient', 'donor', 'shopkeeper'];
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({ message: `Invalid role. Allowed roles are: ${validRoles.join(', ')}` });
+    // If the user is a donor, validate donor-specific fields
+    if (isDonor) {
+      if (!bloodType) {
+        return res.status(400).json({ message: 'Blood Type is required for donors.' });
+      }
+      if (!['yes', 'no'].includes(medicalHistory?.toLowerCase())) {
+        return res.status(400).json({ message: 'Medical History must be "Yes" or "No".' });
+      }
+      if (medicalHistory === 'yes' && !medicalHistoryDescription) {
+        return res.status(400).json({ message: 'Please describe your medical history.' });
+      }
+      if (!lastBloodDonation || !availability) {
+        return res.status(400).json({ message: 'Last Blood Donation and Availability are required for donors.' });
+      }
     }
 
-    // Check if the email or username already exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    // Check if the user already exists by userId or email
+    const existingUser = users.find(user => user.userId === userId || user.email === email);
     if (existingUser) {
-      return res.status(409).json({ message: 'Email or username already exists.' });
+      return res.status(409).json({ message: 'User ID or Email already exists.' });
     }
 
-    // Hash the password
+    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user
-    const newUser = new User({
-      fullname,
-      username,
+    // Create new user object
+    const newUser = {
+      name,
+      userId,
       email,
+      phoneNo,
+      age,
+      location,
+      isDonor,
+      bloodType,
+      medicalHistory,
+      medicalHistoryDescription,
+      lastBloodDonation,
+      availability,
+      notificationsOn,
+      chatGptUses,
       password: hashedPassword,
-      phone,
-      dob,
-      gender,
-      role,
-    });
+    };
 
-    await newUser.save();
-    res.status(201).json({ message: 'User registered successfully.' });
+    // Store the user (replace with database logic)
+    users.push(newUser);
+
+    res.status(201).json({ message: 'User registered successfully.', user: newUser });
   } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ message: 'Server error. Please try again later.' });
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Registration failed.' });
   }
 };
 
 // Login a user
 exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
+    // Validate input
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required.' });
+      return res.status(400).json({ message: 'Email and Password are required.' });
     }
 
-    const user = await User.findOne({ email });
+    // Find the user by email
+    const user = users.find(u => u.email === email);
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
 
+    // Compare the provided password with the stored hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY, {
-      expiresIn: '1h',
-    });
+    // Generate JWT token
+    const token = jwt.sign({ userId: user.userId }, jwtSecretKey, { expiresIn: '1h' });
 
-    res.status(200).json({ message: 'Login successful.', token, role: user.role });
+    res.status(200).json({
+      message: 'Login successful.',
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+        userId: user.userId,
+        isDonor: user.isDonor,
+      },
+    });
   } catch (error) {
-    console.error('Error logging in user:', error);
-    res.status(500).json({ message: 'Server error. Please try again later.' });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Login failed.' });
   }
 };
 
-// Get all users
 exports.getAllUsers = (req, res) => {
   try {
-    console.log('Request body:', req.body);
-    User.find({}, (err, users) => {
-      if (err) {
-        console.error('Error fetching users:', err);
-        return res.status(500).json({ message: 'Failed to retrieve users.' });
-      }
-      res.status(200).json(users);
-    });
+    // Replace with actual DB query
+    res.status(200).json(users); // Return all users
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Failed to retrieve users.' });

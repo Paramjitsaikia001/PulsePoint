@@ -2,8 +2,9 @@ const express = require('express');
 const { registerUser, loginUser } = require('../controllers/authcontroller.js'); // Ensure these are imported correctly
 const router = express.Router();
 const authController = require('../controllers/authcontroller.js');
-const { authenticateUser, authorizeAdmin, jwtMiddleware } = require('../middleware/authMiddleware.js');
+const { authenticateUser, authorizeAdmin } = require('../middleware/authMiddleware.js');
 
+<<<<<<< HEAD
 // Apply jwtMiddleware globally to all routes except the excluded ones
 router.use(jwtMiddleware);
 
@@ -38,3 +39,14 @@ router.use((req, res, next) => {
 });
 
 module.exports = router;
+=======
+// Routes without authentication
+Authrouter.post('/register', authController.registerUser);
+Authrouter.post('/login', authController.loginUser);
+Authrouter.post('/refresh', authController.refreshToken); 
+
+// Routes with authentication
+Authrouter.get('/users', authenticateUser, authorizeAdmin, authController.getAllUsers);
+
+module.exports = Authrouter;
+>>>>>>> 2cab52a201d527cc738e70fc620d7fbbfd420752
