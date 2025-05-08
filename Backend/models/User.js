@@ -1,43 +1,89 @@
-// models/User.js
-const mongoose = require('mongoose');
+// // models/User.js
+// const mongoose = require("mongoose");
 
-const donorEligibilitySchema = new mongoose.Schema({
-    ageBetween18to60: Boolean,
-    haemoglobinAbove12_5: Boolean,
-    pulseBetween50to100: Boolean,
-    bloodPressureNormal: Boolean,
-    temperatureNormal: Boolean,
-    rabiesOrHepatitisBInLastYear: Boolean,
-    tattooOrMajorSurgeryIn6Months: Boolean,
-    malariaOrBloodDonationIn3Months: Boolean,
-    immunizationsIn1Month: Boolean,
-    antibioticsIn48Hours: Boolean,
-    alcoholIn24Hours: Boolean,
-    dentalOrAspirinIn72Hours: Boolean,
-    coldOrCoughNow: Boolean,
-    pregnantOrBreastFeeding: Boolean,
-    menstruationCycle: Boolean,
-    diabetesOrHeartDisease: Boolean,
-    unexplainedFeverWeightLoss: Boolean,
-    tbOrAsthmaOrLiverDisease: Boolean,
-    hivOrBloodClottingDisorders: Boolean
-}, { _id: false });
+// const donorEligibilitySchema = new mongoose.Schema(
+//   {
+//     ageBetween18to60: String,
+//     haemoglobinAbove12_5: String,
+//     pulseBetween50to100: String,
+//     bloodPressureNormal: String,
+//     temperatureNormal: String,
+//     rabiesOrHepatitisBInLastYear: String,
+//     tattooOrMajorSurgeryIn6Months: String,
+//     malariaOrBloodDonationIn3Months: String,
+//     immunizationsIn1Month: String,
+//     antibioticsIn48Hours: String,
+//     alcoholIn24Hours: String,
+//     dentalOrAspirinIn72Hours: String,
+//     coldOrCoughNow: String,
+//     pregnantOrBreastFeeding: String,
+//     menstruationCycle: String,
+//     diabetesOrHeartDisease: String,
+//     unexplainedFeverWeightLoss: String,
+//     tbOrAsthmaOrLiverDisease: String,
+//     hivOrBloodClottingDisorders: String,
+//   },
+//   { _id: false }
+// );
+
+// const userSchema = new mongoose.Schema({
+//   name: { type: String, required: true },
+//   email: { type: String, unique: true, required: true },
+//   password: { type: String, required: true },
+//   phone: { type: String, unique: true, required: true },
+//   gender: String,
+//   dob: Date,
+//   bloodGroup: String,
+//   isDonor: Boolean,
+//   donorEligibility: donorEligibilitySchema,
+//   role: { type: String, default: "user" },
+// });
+
+// module.exports = mongoose.model("User", userSchema);
+
+
+const mongoose = require("mongoose");
+
+const donorEligibilitySchema = new mongoose.Schema(
+  {
+    ageBetween18to60: String,
+    haemoglobinAbove12_5: String,
+    pulseBetween50to100: String,
+    bloodPressureNormal: String,
+    temperatureNormal: String,
+    rabiesOrHepatitisBInLastYear: String,
+    tattooOrMajorSurgeryIn6Months: String,
+    malariaOrBloodDonationIn3Months: String,
+    immunizationsIn1Month: String,
+    antibioticsIn48Hours: String,
+    alcoholIn24Hours: String,
+    dentalOrAspirinIn72Hours: String,
+    coldOrCoughNow: String,
+    pregnantOrBreastFeeding: String,
+    menstruationCycle: String,
+    diabetesOrHeartDisease: String,
+    unexplainedFeverWeightLoss: String,
+    tbOrAsthmaOrLiverDisease: String,
+    hivOrBloodClottingDisorders: String,
+  },
+  { _id: false }
+);
 
 const userSchema = new mongoose.Schema({
-  role: {
-    type: String,
-    enum: ['user', 'donor', 'admin'],
-    default: 'user'
-  },
-  name: String,
-  email: { type: String, unique: true },
-  phone: { type: String, unique: true,required: true },
+  name: { type: String, required: true },
+  username: { type: String, unique: true, required: true },
+  email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+  phone: { type: String, unique: true, required: true },
   gender: String,
   dob: Date,
-  bloodGroup: { type: String },
-  isDonor: { type: Boolean, default: false },
-  donorEligibility: { type: donorEligibilitySchema, default: null },
-}, { timestamps: true });
+  bloodGroup: String,
+  isDonor: Boolean,
+  donorEligibility: donorEligibilitySchema,
+  shopName: { type: String },
+  licenseNumber: { type: String },
+  role: { type: String, default: "user" },
+  refreshToken: { type: String },
+});
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

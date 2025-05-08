@@ -1,4 +1,5 @@
 const BloodRequest = require('../models/bloodRequestModel.js');
+const Notification = require('../models/Notification.js'); // Import the Notification model
 
 // Create a blood request
 exports.createBloodRequest = async (req, res) => {
@@ -10,13 +11,25 @@ exports.createBloodRequest = async (req, res) => {
         }
 
         const newRequest = new BloodRequest({
-            userId: req.user.id,
+            userId: req.auth._id, // Use `req.auth._id` for authenticated user
             bloodGroup,
             location,
             urgency,
         });
 
         await newRequest.save();
+
+        // Create a notification for the blood request
+        const notification = new Notification({
+            userId: req.auth._id, // The user who created the request
+            message: `A new blood request for ${bloodGroup} has been created.`,
+            bloodGroup,
+            location: { lat: 0, lng: 0 }, // Replace with actual location coordinates if available
+            type: 'blood_request',
+        });
+
+        await notification.save();
+
         res.status(201).json({ message: 'Blood request created successfully.', request: newRequest });
     } catch (error) {
         console.error('Error creating blood request:', error);

@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema({
   bloodGroup: String,
   location: {
     lat: Number,
-    lng: Number
+    lng: Number,
   },
   isSeen: { type: Boolean, default: false },
   type: { type: String, enum: ['blood_request', 'medicine_update', 'general'] },

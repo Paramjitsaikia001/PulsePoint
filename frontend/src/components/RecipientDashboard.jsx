@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import {
   Heart,
@@ -24,7 +24,8 @@ import axios from 'axios';
 import api from '../utils/api';
 
 const RecipientDashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedBloodType, setSelectedBloodType] = useState("")
   const [selectedDistance, setSelectedDistance] = useState("")
@@ -33,6 +34,27 @@ const RecipientDashboard = () => {
   const [bloodRequest, setBloodRequest] = useState({ bloodGroup: '', location: '', urgency: '' });
   const [medicineRequest, setMedicineRequest] = useState({ medicineName: '', purpose: '' });
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await axios.get("http://localhost:3000/api/auth/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUser(response.data); // Set the user data
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        if (error.response?.status === 401) {
+          window.location.href = "/login"; // Redirect to login if unauthorized
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleBloodRequest = async (e) => {
     e.preventDefault();
@@ -599,7 +621,7 @@ const RecipientDashboard = () => {
             <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="h-12 w-12 text-blue-500" />
             </div>
-            <h4 className="text-xl font-bold text-gray-800">Sarah Recipient</h4>
+            <h4 className="text-xl font-bold text-gray-800">{user.name}</h4>
             <p className="text-sm text-gray-500">Blood Type: O+</p>
             <div className="mt-4 flex items-center justify-center">
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
@@ -1027,6 +1049,10 @@ const RecipientDashboard = () => {
     </div>
   )
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -1057,7 +1083,7 @@ const RecipientDashboard = () => {
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-2">
                   <User className="h-5 w-5 text-blue-500" />
                 </div>
-                <span className="font-medium text-gray-800">Sarah R.</span>
+                <span className="font-medium text-gray-800">{user.name}</span>
               </div>
             </div>
           </div>
@@ -1201,4 +1227,3 @@ const RecipientDashboard = () => {
 }
 
 export default RecipientDashboard
-

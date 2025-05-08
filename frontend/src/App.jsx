@@ -1,58 +1,72 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import { motion, useAnimation } from "framer-motion"
-import { Heart, Droplet, MapPin, Shield, Search, MessageSquare, Users, Award, UserPlus, Gift } from "lucide-react"
-import "./index.css"
-import Navbar from "./components/Navbar"
+import React, { useRef, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
+import { motion, useAnimation } from "framer-motion";
+import { Link } from "react-router-dom";
+import {
+  Heart,
+  Droplet,
+  MapPin,
+  Shield,
+  Search,
+  MessageSquare,
+  Users,
+  Award,
+  UserPlus,
+  Gift,
+} from "lucide-react";
+import "./index.css";
+import Navbar from "./components/Navbar";
 
-function App() {
-  const controls = useAnimation()
-  const featuresRef = useRef(null)
-  const howItWorksRef = useRef(null)
-  const testimonialRef = useRef(null)
+// Home component (landing page content from provided App.jsx)
+const App = () => {
+  const controls = useAnimation();
+  const featuresRef = useRef(null);
+  const howItWorksRef = useRef(null);
+  const testimonialRef = useRef(null);
 
   // Refs for each section
-  const sectionRefs = [useRef(null), useRef(null), useRef(null)]
+  const sectionRefs = [useRef(null), useRef(null), useRef(null)];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            controls.start("visible")
+            controls.start("visible");
           }
-        })
+        });
       },
-      { threshold: 0.1 },
-    )
+      { threshold: 0.1 }
+    );
 
     if (featuresRef.current) {
-      observer.observe(featuresRef.current)
+      observer.observe(featuresRef.current);
     }
 
     sectionRefs.forEach((ref) => {
       if (ref.current) {
-        observer.observe(ref.current)
+        observer.observe(ref.current);
       }
-    })
+    });
 
     return () => {
       if (featuresRef.current) {
-        observer.unobserve(featuresRef.current)
+        observer.unobserve(featuresRef.current);
       }
 
       sectionRefs.forEach((ref) => {
         if (ref.current) {
-          observer.unobserve(ref.current)
+          observer.unobserve(ref.current);
         }
-      })
-    }
-  }, [controls])
+      });
+    };
+  }, [controls]);
 
   const scrollToSection = (ref) => {
-    ref.current.scrollIntoView({ behavior: "smooth" })
-  }
+    ref.current.scrollIntoView({ behavior: "smooth" });
+  };
 
   // Data for the sections
   const sections = [
@@ -80,12 +94,17 @@ function App() {
       icon: <Gift className="w-12 h-12 text-emerald-500" />,
       color: "from-emerald-400 to-emerald-600",
     },
-  ]
+  ];
+
+  const { username } = useParams(); // Extract username from URL
+  const isLoggedIn = !!localStorage.getItem("accessToken"); // Check login status
+  const storedUsername = localStorage.getItem("username") || username; // Fallback to URL username
 
   return (
     <div className="font-sans bg-slate-50">
       {/* Navigation */}
-<Navbar/>
+      <Navbar username={isLoggedIn ? storedUsername : null} />
+
       {/* Hero Section */}
       <section className="pt-32 pb-20 md:pt-40 md:pb-32 bg-gradient-to-br from-slate-50 via-red-50 to-blue-50">
         <div className="container mx-auto px-4">
@@ -100,22 +119,35 @@ function App() {
                 Saving Lives Together
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6 leading-tight">
-                Connecting <span className="text-red-500">Blood Donors</span> &{" "}
-                <span className="text-blue-500">Medicine</span> When It Matters Most
+                {isLoggedIn && storedUsername ? (
+                  <>
+                    Welcome, <span className="text-red-500">{storedUsername}</span>!
+                  </>
+                ) : (
+                  <>
+                    Connecting <span className="text-red-500">Blood Donors</span> &{" "}
+                    <span className="text-blue-500">Medicine</span> When It Matters Most
+                  </>
+                )}
               </h1>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Our P2P platform connects those in need with donors and suppliers in real-time, making critical
-                resources accessible during emergencies and everyday situations.
+                {isLoggedIn
+                  ? "Explore your dashboard and manage your activities."
+                  : "Our P2P platform connects those in need with donors and suppliers in real-time, making critical resources accessible during emergencies and everyday situations."}
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <button className="px-8 py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full hover:shadow-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center">
+                <Link
+                  to={`/${storedUsername}/find-donor`}
+                  className="px-8 py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full hover:shadow-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center">
                   <Search className="w-5 h-5 mr-2" />
                   Find a Donor
-                </button>
-                <button className="px-8 py-3.5 border-2 border-red-500 text-red-500 rounded-full hover:bg-red-50 transition-colors flex items-center justify-center">
+                </Link>
+                <Link
+                  to={`/${storedUsername}/be-a-donor`}
+                  className="px-8 py-3.5 border-2 border-red-500 text-red-500 rounded-full hover:bg-red-50 transition-colors flex items-center justify-center">
                   <UserPlus className="w-5 h-5 mr-2" />
                   Be a Donor
-                </button>
+                </Link>
               </div>
             </motion.div>
             <motion.div
@@ -157,7 +189,6 @@ function App() {
               <p className="text-3xl md:text-4xl font-bold text-red-500 mb-2">10K+</p>
               <p className="text-gray-600">Active Donors</p>
             </motion.div>
-
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -168,7 +199,6 @@ function App() {
               <p className="text-3xl md:text-4xl font-bold text-blue-500 mb-2">5K+</p>
               <p className="text-gray-600">Lives Saved</p>
             </motion.div>
-
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -179,7 +209,6 @@ function App() {
               <p className="text-3xl md:text-4xl font-bold text-emerald-500 mb-2">200+</p>
               <p className="text-gray-600">Cities Covered</p>
             </motion.div>
-
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -236,7 +265,6 @@ function App() {
                 Filter by blood type, medication, location, and availability to find exactly what you need.
               </p>
             </motion.div>
-
             <motion.div
               className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group hover:-translate-y-1"
               initial={{ opacity: 0, y: 20 }}
@@ -255,7 +283,6 @@ function App() {
                 Connect with nearby donors and suppliers for faster access during critical situations.
               </p>
             </motion.div>
-
             <motion.div
               className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group hover:-translate-y-1"
               initial={{ opacity: 0, y: 20 }}
@@ -274,7 +301,6 @@ function App() {
                 All donors and suppliers undergo verification to ensure authenticity and safety.
               </p>
             </motion.div>
-
             <motion.div
               className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group hover:-translate-y-1"
               initial={{ opacity: 0, y: 20 }}
@@ -317,7 +343,7 @@ function App() {
           </motion.div>
 
           {sections.map((section, index) => {
-            const isEven = index % 2 === 0
+            const isEven = index % 2 === 0;
 
             return (
               <motion.div
@@ -372,7 +398,7 @@ function App() {
                   </div>
                 </div>
               </motion.div>
-            )
+            );
           })}
         </div>
       </section>
@@ -388,15 +414,17 @@ function App() {
               <div className="md:w-2/3 mb-8 md:mb-0">
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Become a Donor Today</h2>
                 <p className="text-white/80 text-lg max-w-2xl">
-                  Join thousands of donors who are making a difference in their communities. Your donation can save
-                  lives and provide essential medications to those in need.
+                  Join thousands of donors who are making a difference in their communities. Your donation can save lives
+                  and provide essential medications to those in need.
                 </p>
               </div>
               <div>
-                <button className="px-8 py-4 bg-white text-red-600 rounded-full hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 font-bold text-lg flex items-center">
+                <Link
+                  to="/:username/be-a-donor"
+                  className="px-8 py-4 bg-white text-red-600 rounded-full hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 font-bold text-lg flex items-center">
                   <UserPlus className="w-5 h-5 mr-2" />
                   Be a Donor
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -451,7 +479,6 @@ function App() {
                 <Award className="w-5 h-5" />
               </div>
             </motion.div>
-
             <motion.div
               className="bg-gradient-to-br from-slate-50 to-white p-8 rounded-3xl shadow-md border border-gray-100"
               initial={{ opacity: 0, y: 20 }}
@@ -480,7 +507,6 @@ function App() {
                 <Award className="w-5 h-5" />
               </div>
             </motion.div>
-
             <motion.div
               className="bg-gradient-to-br from-slate-50 to-white p-8 rounded-3xl shadow-md border border-gray-100"
               initial={{ opacity: 0, y: 20 }}
@@ -605,9 +631,10 @@ function App() {
               <button className="px-10 py-4 bg-white text-red-600 rounded-full hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 font-bold text-lg">
                 Register Now
               </button>
-              <button className="px-10 py-4 bg-transparent border-2 border-white text-white rounded-full hover:bg-white hover:text-red-600 transition-all duration-300 font-bold text-lg">
+              <Link
+                to="/:username/be-a-donor" className="px-10 py-4 bg-transparent border-2 border-white text-white rounded-full hover:bg-white hover:text-red-600 transition-all duration-300 font-bold text-lg">
                 Be a Donor
-              </button>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -680,18 +707,21 @@ function App() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-red-400 transition-colors">
+                  <Link
+                    to="/find-donor"
+                    className="hover:text-red-400 transition-colors">
                     Find Donors
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-red-400 transition-colors">
+                  <Link
+                    to="/:username/be-a-donor"
+                    className="hover:text-red-400 transition-colors">
                     Become a Donor
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
-
             <div>
               <h3 className="text-lg font-semibold mb-6 text-white">Resources</h3>
               <ul className="space-y-3">
@@ -790,7 +820,7 @@ function App() {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
-            <p>&copy; {new Date().getFullYear()} LifeLink. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} LifeLink. All rights reserved.</p>
             <div className="flex justify-center space-x-6 mt-4">
               <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
                 Privacy Policy
@@ -806,8 +836,7 @@ function App() {
         </div>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default App
-
+export default App;

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import axios from "axios"
 import { motion } from "framer-motion"
 import {
   Heart,
@@ -19,12 +20,99 @@ import {
   Droplet,
   Shield,
 } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+
+// Function to refresh access token
+const refreshAccessToken = async () => {
+  try {
+    const refreshToken = localStorage.getItem("refreshToken")
+    const response = await axios.post("http://localhost:3000/api/auth/refresh", { refreshToken })
+    localStorage.setItem("accessToken", response.data.accessToken)
+    return response.data.accessToken
+  } catch (error) {
+    console.error("Error refreshing access token:", error)
+    window.location.href = "/login" // Redirect to login if refresh fails
+  }
+}
 
 const DonorDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard")
+  const [user, setUser] = useState(null)
+  const [formData, setFormData] = useState({})
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const navigate = useNavigate()
 
-  // Mock data for the dashboard
+  // Handle form submission for login
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (isSubmitted) return
+    setIsSubmitted(true)
+    setLoading(true)
+    setError("")
+
+    try {
+      const response = await axios.post("/auth/login", formData)
+      const { accessToken, refreshToken, user } = response.data
+
+      if (!accessToken || !refreshToken || !user || !user.name) {
+        throw new Error("Invalid response format from server.")
+      }
+
+      localStorage.setItem("accessToken", accessToken)
+      localStorage.setItem("refreshToken", refreshToken)
+      localStorage.setItem("userName", user.name)
+
+      navigate(`/${user.name}/dashboard`, { replace: true })
+    } catch (error) {
+      console.error("Login error:", error)
+      setError(error.response?.data?.message || error.message || "Login failed. Please try again.")
+    } finally {
+      setLoading(false)
+      setIsSubmitted(false)
+    }
+  }
+
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        let token = localStorage.getItem("accessToken")
+        const response = await axios.get("http://localhost:3000/api/auth/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        setUser(response.data)
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+        if (error.response?.status === 401) {
+          // Attempt to refresh token
+          const newToken = await refreshAccessToken()
+          if (newToken) {
+            try {
+              const response = await axios.get("http://localhost:3000/api/auth/profile", {
+                headers: {
+                  Authorization: `Bearer ${newToken}`,
+                },
+              })
+              setUser(response.data)
+            } catch (retryError) {
+              console.error("Retry error after token refresh:", retryError)
+              window.location.href = "/login"
+            }
+          }
+        } else {
+          window.location.href = "/login"
+        }
+      }
+    }
+
+    fetchUserData()
+  }, [])
+
+  // Mock data for the dashboard (unchanged)
   const upcomingAppointments = [
     {
       id: 1,
@@ -119,6 +207,7 @@ const DonorDashboard = () => {
     },
   ]
 
+  // Render functions (unchanged from second component)
   const renderDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2 space-y-6">
@@ -516,8 +605,8 @@ const DonorDashboard = () => {
             <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="h-12 w-12 text-red-500" />
             </div>
-            <h4 className="text-xl font-bold text-gray-800">John Donor</h4>
-            <p className="text-sm text-gray-500">Blood Type: O+</p>
+            <h4 className="text-xl font-bold text-gray-800">{user?.name || "John Donor"}</h4>
+            <p className="text-sm text-gray-500">Blood Type: {user?.bloodType || "O+"}</p>
             <div className="mt-4 flex items-center justify-center">
               <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
                 <CheckCircle className="h-3 w-3 mr-1" />
@@ -581,7 +670,7 @@ const DonorDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                 <input
                   type="text"
-                  value="John"
+                  value={user?.firstName || "John"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   readOnly
                 />
@@ -591,7 +680,7 @@ const DonorDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                 <input
                   type="text"
-                  value="Donor"
+                  value={user?.lastName || "Donor"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   readOnly
                 />
@@ -602,7 +691,7 @@ const DonorDashboard = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
                 type="email"
-                value="john.donor@example.com"
+                value={user?.email || "john.donor@example.com"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 readOnly
               />
@@ -612,7 +701,7 @@ const DonorDashboard = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
               <input
                 type="tel"
-                value="(555) 123-4567"
+                value={user?.phone || "(555) 123-4567"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 readOnly
               />
@@ -622,7 +711,7 @@ const DonorDashboard = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
               <input
                 type="text"
-                value="123 Main Street, Apt 4B"
+                value={user?.address || "123 Main Street, Apt 4B"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 readOnly
               />
@@ -633,7 +722,7 @@ const DonorDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                 <input
                   type="text"
-                  value="New York"
+                  value={user?.city || "New York"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   readOnly
                 />
@@ -643,7 +732,7 @@ const DonorDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
                 <input
                   type="text"
-                  value="NY"
+                  value={user?.state || "NY"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   readOnly
                 />
@@ -653,7 +742,7 @@ const DonorDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
                 <input
                   type="text"
-                  value="10001"
+                  value={user?.zipCode || "10001"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   readOnly
                 />
@@ -676,7 +765,7 @@ const DonorDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Blood Type</label>
                 <input
                   type="text"
-                  value="O+"
+                  value={user?.bloodType || "O+"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   readOnly
                 />
@@ -686,7 +775,7 @@ const DonorDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last Donation Date</label>
                 <input
                   type="text"
-                  value="August 10, 2023"
+                  value={user?.lastDonationDate || "August 10, 2023"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   readOnly
                 />
@@ -696,7 +785,7 @@ const DonorDashboard = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Medical Conditions</label>
               <textarea
-                value="None"
+                value={user?.medicalConditions || "None"}
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 readOnly
@@ -707,7 +796,7 @@ const DonorDashboard = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Allergies</label>
               <input
                 type="text"
-                value="None"
+                value={user?.allergies || "None"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 readOnly
               />
@@ -928,6 +1017,11 @@ const DonorDashboard = () => {
     </div>
   )
 
+  // Show loading state while fetching user data
+  if (!user) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -958,7 +1052,7 @@ const DonorDashboard = () => {
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-2">
                   <User className="h-5 w-5 text-red-500" />
                 </div>
-                <span className="font-medium text-gray-800">John D.</span>
+                <span className="font-medium text-gray-800">{user.name}</span>
               </div>
             </div>
           </div>
@@ -1055,4 +1149,3 @@ const DonorDashboard = () => {
 }
 
 export default DonorDashboard
-
