@@ -22,4 +22,5 @@ Authrouter.post('/check-existence', authController.checkExistence);
 // Route to get user profile (protected)
 Authrouter.get('/profile', authenticateUser, authController.getUserProfile);
 
+Authrouter.post("/donor/register", authenticateUser, authController.registerDonor);
 module.exports = Authrouter;

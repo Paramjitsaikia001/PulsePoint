@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Heart,
   User,
@@ -17,24 +17,26 @@ import {
   Droplet,
   Filter,
   Plus,
-} from "lucide-react"
-import { Link } from "react-router-dom"
-import Chat from './Chat';
-import axios from 'axios';
-import api from '../utils/api';
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import api from "../utils/api";
+import Navbar from "./Navbar"; // Import the corrected Navbar
+import Chat from "./Chat";
 
 const RecipientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [user, setUser] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedBloodType, setSelectedBloodType] = useState("")
-  const [selectedDistance, setSelectedDistance] = useState("")
-  const recipientId = 'recipient123'; // Replace with actual recipient ID
-  const donorId = 'donor456'; // Replace with actual donor ID
-  const [bloodRequest, setBloodRequest] = useState({ bloodGroup: '', location: '', urgency: '' });
-  const [medicineRequest, setMedicineRequest] = useState({ medicineName: '', purpose: '' });
-  const [message, setMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBloodType, setSelectedBloodType] = useState("");
+  const [selectedDistance, setSelectedDistance] = useState("");
+  const recipientId = "recipient123"; // Replace with actual recipient ID
+  const donorId = "donor456"; // Replace with actual donor ID
+  const [bloodRequest, setBloodRequest] = useState({ bloodGroup: "", location: "", urgency: "" });
+  const [medicineRequest, setMedicineRequest] = useState({ medicineName: "", purpose: "" });
+  const [message, setMessage] = useState("");
 
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -44,11 +46,11 @@ const RecipientDashboard = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setUser(response.data); // Set the user data
+        setUser(response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
         if (error.response?.status === 401) {
-          window.location.href = "/login"; // Redirect to login if unauthorized
+          window.location.href = "/login";
         }
       }
     };
@@ -56,30 +58,46 @@ const RecipientDashboard = () => {
     fetchUserData();
   }, []);
 
+  // Handle blood request
   const handleBloodRequest = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/blood/request', bloodRequest);
-      setMessage('Blood request submitted successfully.');
+      await api.post("/blood/request", bloodRequest);
+      setMessage("Blood request submitted successfully.");
     } catch {
-      setMessage('Failed to submit blood request.');
+      setMessage("Failed to submit blood request.");
     }
   };
 
+  // Handle medicine request
   const handleMedicineRequest = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('authToken');
-      await axios.post('http://localhost:5000/api/prescriptions/request', medicineRequest, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMessage('Medicine request submitted successfully.');
+      const token = localStorage.getItem("accessToken"); // Fixed: Use consistent token key
+      await axios.post(
+        "http://localhost:5000/api/prescriptions/request",
+        medicineRequest,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setMessage("Medicine request submitted successfully.");
     } catch {
-      setMessage('Failed to submit medicine request.');
+      setMessage("Failed to submit medicine request.");
     }
   };
 
-  // Mock data for the dashboard
+  // Handle notifications click
+  const handleNotificationsClick = () => {
+    setActiveTab("messages"); // Example: Switch to messages tab
+  };
+
+  // Handle messages click
+  const handleMessagesClick = () => {
+    setActiveTab("messages");
+  };
+
+  // Mock data
   const nearbyDonors = [
     {
       id: 1,
@@ -105,7 +123,7 @@ const RecipientDashboard = () => {
       lastDonation: "1 month ago",
       status: "unavailable",
     },
-  ]
+  ];
 
   const requestHistory = [
     {
@@ -132,8 +150,7 @@ const RecipientDashboard = () => {
       donor: null,
       hospital: "Community Hospital",
     },
-  ]
-
+  ];
 
   const medicines = [
     {
@@ -160,8 +177,9 @@ const RecipientDashboard = () => {
       price: "$8.99",
       availability: "Low Stock",
     },
-  ]
+  ];
 
+  // Render functions (unchanged from original, included for completeness)
   const renderDashboard = () => (
     <div className="space-y-6">
       <motion.div
@@ -176,7 +194,6 @@ const RecipientDashboard = () => {
             View Map <ChevronRight className="h-4 w-4 ml-1" />
           </button>
         </div>
-
         <div className="mb-6">
           <div className="flex items-center">
             <div className="relative flex-1">
@@ -193,7 +210,6 @@ const RecipientDashboard = () => {
               <Filter className="h-5 w-5 text-gray-500" />
             </button>
           </div>
-
           <div className="flex items-center mt-3 space-x-2">
             <select
               value={selectedBloodType}
@@ -210,7 +226,6 @@ const RecipientDashboard = () => {
               <option value="O+">O+</option>
               <option value="O-">O-</option>
             </select>
-
             <select
               value={selectedDistance}
               onChange={(e) => setSelectedDistance(e.target.value)}
@@ -224,7 +239,6 @@ const RecipientDashboard = () => {
             </select>
           </div>
         </div>
-
         <div className="space-y-4">
           {nearbyDonors.map((donor) => (
             <div key={donor.id} className="flex items-center p-4 bg-gray-50 rounded-2xl">
@@ -235,8 +249,9 @@ const RecipientDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-gray-800">{donor.name}</h4>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${donor.status === "available" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                      }`}
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      donor.status === "available" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                    }`}
                   >
                     {donor.status === "available" ? "Available" : "Unavailable"}
                   </span>
@@ -263,7 +278,6 @@ const RecipientDashboard = () => {
             </div>
           ))}
         </div>
-
         <div className="mt-6 text-center">
           <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
             Create Blood Request
@@ -283,7 +297,6 @@ const RecipientDashboard = () => {
             View All <ChevronRight className="h-4 w-4 ml-1" />
           </button>
         </div>
-
         <div className="mb-6">
           <div className="relative">
             <input
@@ -294,7 +307,6 @@ const RecipientDashboard = () => {
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
         </div>
-
         <div className="space-y-4">
           {medicines.map((medicine) => (
             <div key={medicine.id} className="flex items-center p-4 bg-gray-50 rounded-2xl">
@@ -318,10 +330,9 @@ const RecipientDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-gray-800">{medicine.name}</h4>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${medicine.availability === "In Stock"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
-                      }`}
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      medicine.availability === "In Stock" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                    }`}
                   >
                     {medicine.availability}
                   </span>
@@ -360,7 +371,6 @@ const RecipientDashboard = () => {
             View All <ChevronRight className="h-4 w-4 ml-1" />
           </button>
         </div>
-
         <div className="space-y-4">
           {requestHistory.map((request) => (
             <div key={request.id} className="flex items-center p-4 bg-gray-50 rounded-2xl">
@@ -371,8 +381,9 @@ const RecipientDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-gray-800">{request.hospital}</h4>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                      }`}
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                    }`}
                   >
                     {request.status === "fulfilled" ? "Fulfilled" : "Expired"}
                   </span>
@@ -402,7 +413,6 @@ const RecipientDashboard = () => {
             </div>
           ))}
         </div>
-
         <div className="mt-6 text-center">
           <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center mx-auto">
             <Plus className="h-4 w-4 mr-2" />
@@ -411,7 +421,7 @@ const RecipientDashboard = () => {
         </div>
       </motion.div>
     </div>
-  )
+  );
 
   const renderHistory = () => (
     <motion.div
@@ -421,7 +431,6 @@ const RecipientDashboard = () => {
       className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100"
     >
       <h3 className="text-lg font-semibold text-gray-800 mb-6">Request History</h3>
-
       {requestHistory.length > 0 ? (
         <div className="space-y-6">
           {requestHistory.map((request) => (
@@ -445,15 +454,15 @@ const RecipientDashboard = () => {
                 </div>
                 <div className="text-right">
                   <span
-                    className={`inline-block text-sm px-2 py-1 rounded-full ${request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                      }`}
+                    className={`inline-block text-sm px-2 py-1 rounded-full ${
+                      request.status === "fulfilled" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                    }`}
                   >
                     {request.status === "fulfilled" ? "Fulfilled" : "Expired"}
                   </span>
                   <p className="text-sm text-gray-500 mt-1">Blood Type: {request.bloodType}</p>
                 </div>
               </div>
-
               {request.donor && (
                 <div className="mt-4 bg-blue-50 p-3 rounded-xl">
                   <div className="flex items-center justify-between">
@@ -467,7 +476,6 @@ const RecipientDashboard = () => {
                   </div>
                 </div>
               )}
-
               <div className="mt-4 flex justify-end">
                 <button className="text-sm text-blue-500 hover:text-blue-600 flex items-center">
                   View Details <ChevronRight className="h-4 w-4 ml-1" />
@@ -486,13 +494,12 @@ const RecipientDashboard = () => {
         </div>
       )}
     </motion.div>
-  )
+  );
 
   const renderMessages = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-1 bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
         <h3 className="text-lg font-semibold text-gray-800 mb-6">Conversations</h3>
-
         <div className="space-y-4">
           <div className="flex items-center p-3 bg-blue-50 rounded-xl cursor-pointer">
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -504,7 +511,6 @@ const RecipientDashboard = () => {
             </div>
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           </div>
-
           <div className="flex items-center p-3 bg-gray-50 rounded-xl cursor-pointer">
             <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
               <User className="h-5 w-5 text-emerald-500" />
@@ -514,7 +520,6 @@ const RecipientDashboard = () => {
               <p className="text-xs text-gray-500">Your order is ready for pickup</p>
             </div>
           </div>
-
           <div className="flex items-center p-3 bg-gray-50 rounded-xl cursor-pointer">
             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
               <User className="h-5 w-5 text-red-500" />
@@ -526,7 +531,6 @@ const RecipientDashboard = () => {
           </div>
         </div>
       </div>
-
       <div className="md:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col">
         <div className="p-4 border-b border-gray-100 flex items-center">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -537,7 +541,6 @@ const RecipientDashboard = () => {
             <p className="text-xs text-gray-500">Blood Type: O+</p>
           </div>
         </div>
-
         <div className="flex-1 p-4 overflow-y-auto">
           <div className="space-y-4">
             <div className="flex justify-start">
@@ -548,17 +551,14 @@ const RecipientDashboard = () => {
                 <p className="text-xs text-gray-500 mt-1">10:30 AM</p>
               </div>
             </div>
-
             <div className="flex justify-end">
               <div className="bg-blue-100 rounded-2xl rounded-tr-none p-3 max-w-xs">
                 <p className="text-sm text-gray-800">
-                  Thank you so much! I really appreciate your willingness to help. When would you be available to
-                  donate?
+                  Thank you so much! I really appreciate your willingness to help. When would you be available to donate?
                 </p>
                 <p className="text-xs text-gray-500 mt-1">10:32 AM</p>
               </div>
             </div>
-
             <div className="flex justify-start">
               <div className="bg-gray-100 rounded-2xl rounded-tl-none p-3 max-w-xs">
                 <p className="text-sm text-gray-800">
@@ -567,7 +567,6 @@ const RecipientDashboard = () => {
                 <p className="text-xs text-gray-500 mt-1">10:33 AM</p>
               </div>
             </div>
-
             <div className="flex justify-end">
               <div className="bg-blue-100 rounded-2xl rounded-tr-none p-3 max-w-xs">
                 <p className="text-sm text-gray-800">
@@ -578,7 +577,6 @@ const RecipientDashboard = () => {
             </div>
           </div>
         </div>
-
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center">
             <input
@@ -606,7 +604,7 @@ const RecipientDashboard = () => {
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderProfile = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -621,7 +619,7 @@ const RecipientDashboard = () => {
             <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="h-12 w-12 text-blue-500" />
             </div>
-            <h4 className="text-xl font-bold text-gray-800">{user.name}</h4>
+            <h4 className="text-xl font-bold text-gray-800">{user?.name || "User"}</h4>
             <p className="text-sm text-gray-500">Blood Type: O+</p>
             <div className="mt-4 flex items-center justify-center">
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
@@ -629,7 +627,6 @@ const RecipientDashboard = () => {
                 Verified Recipient
               </span>
             </div>
-
             <div className="mt-6 flex justify-center">
               <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                 Edit Profile
@@ -637,7 +634,6 @@ const RecipientDashboard = () => {
             </div>
           </div>
         </motion.div>
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -645,23 +641,19 @@ const RecipientDashboard = () => {
           className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 mt-6"
         >
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Medical Information</h3>
-
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Blood Type:</span>
               <span className="text-sm font-medium bg-red-100 text-red-800 px-2 py-0.5 rounded-full">O+</span>
             </div>
-
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Hospital:</span>
               <span className="text-sm text-gray-800">Memorial Hospital</span>
             </div>
-
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Doctor:</span>
               <span className="text-sm text-gray-800">Dr. Johnson</span>
             </div>
-
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Last Transfusion:</span>
               <span className="text-sm text-gray-800">Sep 15, 2023</span>
@@ -669,7 +661,6 @@ const RecipientDashboard = () => {
           </div>
         </motion.div>
       </div>
-
       <div className="md:col-span-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -678,86 +669,78 @@ const RecipientDashboard = () => {
           className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100"
         >
           <h3 className="text-lg font-semibold text-gray-800 mb-6">Personal Information</h3>
-
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                 <input
                   type="text"
-                  value="Sarah"
+                  value={user?.firstName || "Sarah"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                 <input
                   type="text"
-                  value="Recipient"
+                  value={user?.lastName || "Recipient"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
                 type="email"
-                value="sarah.recipient@example.com"
+                value={user?.email || "sarah.recipient@example.com"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 readOnly
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
               <input
                 type="tel"
-                value="(555) 987-6543"
+                value={user?.phone || "(555) 987-6543"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 readOnly
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
               <input
                 type="text"
-                value="456 Oak Avenue, Unit 7C"
+                value={user?.address || "456 Oak Avenue, Unit 7C"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 readOnly
               />
             </div>
-
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                 <input
                   type="text"
-                  value="New York"
+                  value={user?.city || "New York"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
                 <input
                   type="text"
-                  value="NY"
+                  value={user?.state || "NY"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
                 <input
                   type="text"
-                  value="10001"
+                  value={user?.zipCode || "10001"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
@@ -765,7 +748,6 @@ const RecipientDashboard = () => {
             </div>
           </div>
         </motion.div>
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -773,7 +755,6 @@ const RecipientDashboard = () => {
           className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 mt-6"
         >
           <h3 className="text-lg font-semibold text-gray-800 mb-6">Emergency Contacts</h3>
-
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Primary Contact</label>
@@ -800,7 +781,6 @@ const RecipientDashboard = () => {
                 </button>
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Contact</label>
               <div className="flex items-center p-3 bg-gray-50 rounded-xl">
@@ -826,7 +806,6 @@ const RecipientDashboard = () => {
                 </button>
               </div>
             </div>
-
             <div className="pt-4">
               <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center">
                 <Plus className="h-4 w-4 mr-2" />
@@ -837,7 +816,7 @@ const RecipientDashboard = () => {
         </motion.div>
       </div>
     </div>
-  )
+  );
 
   const renderSettings = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -849,7 +828,6 @@ const RecipientDashboard = () => {
           className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100"
         >
           <h3 className="text-lg font-semibold text-gray-800 mb-6">Settings</h3>
-
           <div className="space-y-2">
             <button className="w-full flex items-center justify-between p-3 bg-blue-50 text-blue-800 rounded-xl">
               <span className="flex items-center">
@@ -858,7 +836,6 @@ const RecipientDashboard = () => {
               </span>
               <ChevronRight className="h-4 w-4" />
             </button>
-
             <button className="w-full flex items-center justify-between p-3 bg-gray-50 text-gray-800 rounded-xl hover:bg-gray-100 transition-colors">
               <span className="flex items-center">
                 <Bell className="h-5 w-5 mr-3" />
@@ -866,15 +843,13 @@ const RecipientDashboard = () => {
               </span>
               <ChevronRight className="h-4 w-4" />
             </button>
-
             <button className="w-full flex items-center justify-between p-3 bg-gray-50 text-gray-800 rounded-xl hover:bg-gray-100 transition-colors">
               <span className="flex items-center">
-                <Shield className="h-5 w-5 mr-3" />
+                <Settings className="h-5 w-5 mr-3" />
                 Privacy & Security
               </span>
               <ChevronRight className="h-4 w-4" />
             </button>
-
             <button className="w-full flex items-center justify-between p-3 bg-gray-50 text-gray-800 rounded-xl hover:bg-gray-100 transition-colors">
               <span className="flex items-center">
                 <Settings className="h-5 w-5 mr-3" />
@@ -883,7 +858,6 @@ const RecipientDashboard = () => {
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-
           <div className="mt-8 pt-6 border-t border-gray-100">
             <button className="w-full flex items-center justify-center p-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
               <LogOut className="h-5 w-5 mr-2" />
@@ -892,7 +866,6 @@ const RecipientDashboard = () => {
           </div>
         </motion.div>
       </div>
-
       <div className="md:col-span-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -901,7 +874,6 @@ const RecipientDashboard = () => {
           className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100"
         >
           <h3 className="text-lg font-semibold text-gray-800 mb-6">Account Settings</h3>
-
           <div className="space-y-6">
             <div>
               <h4 className="text-md font-medium text-gray-700 mb-3">Change Password</h4>
@@ -913,7 +885,6 @@ const RecipientDashboard = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
                   <input
@@ -921,7 +892,6 @@ const RecipientDashboard = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
                   <input
@@ -929,7 +899,6 @@ const RecipientDashboard = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-
                 <div>
                   <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                     Update Password
@@ -937,7 +906,6 @@ const RecipientDashboard = () => {
                 </div>
               </div>
             </div>
-
             <div className="pt-6 border-t border-gray-100">
               <h4 className="text-md font-medium text-gray-700 mb-3">Email Notifications</h4>
               <div className="space-y-3">
@@ -956,7 +924,6 @@ const RecipientDashboard = () => {
                     </label>
                   </div>
                 </div>
-
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-800">Request Updates</p>
@@ -972,7 +939,6 @@ const RecipientDashboard = () => {
                     </label>
                   </div>
                 </div>
-
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-800">Medicine Availability</p>
@@ -988,7 +954,6 @@ const RecipientDashboard = () => {
                     </label>
                   </div>
                 </div>
-
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-800">Newsletter</p>
@@ -1006,7 +971,6 @@ const RecipientDashboard = () => {
                 </div>
               </div>
             </div>
-
             <div className="pt-6 border-t border-gray-100">
               <h4 className="text-md font-medium text-gray-700 mb-3">Privacy Settings</h4>
               <div className="space-y-3">
@@ -1025,7 +989,6 @@ const RecipientDashboard = () => {
                     </label>
                   </div>
                 </div>
-
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-800">Location Sharing</p>
@@ -1047,7 +1010,7 @@ const RecipientDashboard = () => {
         </motion.div>
       </div>
     </div>
-  )
+  );
 
   if (!user) {
     return <div>Loading...</div>;
@@ -1055,43 +1018,12 @@ const RecipientDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center">
-              <Heart className="h-8 w-8 text-blue-500 mr-2" />
-              <span className="font-bold text-xl text-gray-800">LifeLink</span>
-            </Link>
-
-            <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-gray-500 hover:text-blue-500 transition-colors">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-4 w-4 bg-blue-500 rounded-full text-xs text-white flex items-center justify-center">
-                  3
-                </span>
-              </button>
-
-              <button className="relative p-2 text-gray-500 hover:text-blue-500 transition-colors">
-                <MessageSquare className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-4 w-4 bg-blue-500 rounded-full text-xs text-white flex items-center justify-center">
-                  1
-                </span>
-              </button>
-
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                  <User className="h-5 w-5 text-blue-500" />
-                </div>
-                <span className="font-medium text-gray-800">{user.name}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <Navbar
+        username={user?.username}
+        onNotificationsClick={handleNotificationsClick}
+        onMessagesClick={handleMessagesClick}
+      />
+      <main className="container mx-auto px-4 py-8 pt-20">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
           <div className="md:w-64 flex-shrink-0">
@@ -1099,54 +1031,52 @@ const RecipientDashboard = () => {
               <nav className="space-y-1">
                 <button
                   onClick={() => setActiveTab("dashboard")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "dashboard" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
+                    activeTab === "dashboard" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   <Heart className={`h-5 w-5 mr-3 ${activeTab === "dashboard" ? "text-blue-500" : "text-gray-400"}`} />
                   Dashboard
                 </button>
-
                 <button
                   onClick={() => setActiveTab("history")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "history" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
+                    activeTab === "history" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   <Calendar className={`h-5 w-5 mr-3 ${activeTab === "history" ? "text-blue-500" : "text-gray-400"}`} />
                   Request History
                 </button>
-
                 <button
                   onClick={() => setActiveTab("messages")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "messages" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
+                    activeTab === "messages" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   <MessageSquare
                     className={`h-5 w-5 mr-3 ${activeTab === "messages" ? "text-blue-500" : "text-gray-400"}`}
                   />
                   Messages
                 </button>
-
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "profile" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
+                    activeTab === "profile" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   <User className={`h-5 w-5 mr-3 ${activeTab === "profile" ? "text-blue-500" : "text-gray-400"}`} />
                   My Profile
                 </button>
-
                 <button
                   onClick={() => setActiveTab("settings")}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${activeTab === "settings" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium ${
+                    activeTab === "settings" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
-                  <Settings
-                    className={`h-5 w-5 mr-3 ${activeTab === "settings" ? "text-blue-500" : "text-gray-400"}`}
-                  />
+                  <Settings className={`h-5 w-5 mr-3 ${activeTab === "settings" ? "text-blue-500" : "text-gray-400"}`} />
                   Settings
                 </button>
               </nav>
-
               <div className="mt-8 pt-6 border-t border-gray-100">
                 <div className="bg-blue-50 rounded-xl p-4">
                   <h4 className="font-medium text-blue-800 mb-2">Create Blood Request</h4>
@@ -1161,7 +1091,6 @@ const RecipientDashboard = () => {
               </div>
             </div>
           </div>
-
           {/* Content */}
           <div className="flex-1">
             {activeTab === "dashboard" && renderDashboard()}
@@ -1169,61 +1098,74 @@ const RecipientDashboard = () => {
             {activeTab === "messages" && renderMessages()}
             {activeTab === "profile" && renderProfile()}
             {activeTab === "settings" && renderSettings()}
-            <Chat senderId={recipientId} receiverId={donorId} />
-            <div className="recipient-dashboard">
-              <h2>Recipient Dashboard</h2>
-              {message && <p>{message}</p>}
-
-              <form onSubmit={handleBloodRequest}>
-                <h3>Submit Blood Request</h3>
+            <div className="mt-8 bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">Recipient Dashboard</h2>
+              {message && <p className="text-green-600 mb-4">{message}</p>}
+              <form onSubmit={handleBloodRequest} className="space-y-4 mb-8">
+                <h3 className="text-lg font-medium text-gray-700">Submit Blood Request</h3>
                 <input
                   type="text"
-                  placeholder="Blood Group"
+                  placeholder="Blood Group (e.g., O+)"
                   value={bloodRequest.bloodGroup}
                   onChange={(e) => setBloodRequest({ ...bloodRequest, bloodGroup: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
                 <input
                   type="text"
-                  placeholder="Location"
+                  placeholder="Location (e.g., New York, NY)"
                   value={bloodRequest.location}
                   onChange={(e) => setBloodRequest({ ...bloodRequest, location: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
                 <input
                   type="text"
-                  placeholder="Urgency"
+                  placeholder="Urgency (e.g., Urgent, Non-Urgent)"
                   value={bloodRequest.urgency}
                   onChange={(e) => setBloodRequest({ ...bloodRequest, urgency: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
-                <button type="submit">Submit Blood Request</button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Submit Blood Request
+                </button>
               </form>
-
-              <form onSubmit={handleMedicineRequest}>
-                <h3>Submit Medicine Request</h3>
+              <form onSubmit={handleMedicineRequest} className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-700">Submit Medicine Request</h3>
                 <input
                   type="text"
-                  placeholder="Medicine Name"
+                  placeholder="Medicine Name (e.g., Insulin)"
                   value={medicineRequest.medicineName}
                   onChange={(e) => setMedicineRequest({ ...medicineRequest, medicineName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
                 <input
                   type="text"
-                  placeholder="Purpose"
+                  placeholder="Purpose (e.g., Diabetes Management)"
                   value={medicineRequest.purpose}
                   onChange={(e) => setMedicineRequest({ ...medicineRequest, purpose: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
-                <button type="submit">Submit Medicine Request</button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Submit Medicine Request
+                </button>
               </form>
             </div>
+            <Chat senderId={recipientId} receiverId={donorId} />
           </div>
         </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default RecipientDashboard
+export default RecipientDashboard;

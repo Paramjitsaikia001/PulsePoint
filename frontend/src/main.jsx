@@ -35,6 +35,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/:username/find-donor" element={<FindDonor />} />
         <Route path="/set-location" element={<SetLocation />} />
         <Route path="/:username/about" element={<AboutUs />} />
+        <Route path="/about" element={<AboutUs />} />
         <Route path="/:username" element={<App />} />
         <Route path="/:username/buy-medicine" element={<BuyMedicine />} />
         <Route path="/:username/be-a-donor" element={<BeADonorPage />} />

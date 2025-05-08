@@ -1,8 +1,6 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { motion } from "framer-motion"
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { motion } from "framer-motion";
 import {
   Heart,
   User,
@@ -19,100 +17,76 @@ import {
   Award,
   Droplet,
   Shield,
-} from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import Navbar from "./Navbar"; // Import the corrected Navbar
 
 // Function to refresh access token
 const refreshAccessToken = async () => {
   try {
-    const refreshToken = localStorage.getItem("refreshToken")
-    const response = await axios.post("http://localhost:3000/api/auth/refresh", { refreshToken })
-    localStorage.setItem("accessToken", response.data.accessToken)
-    return response.data.accessToken
+    const refreshToken = localStorage.getItem("refreshToken");
+    const response = await axios.post("http://localhost:3000/api/auth/refresh", { refreshToken });
+    localStorage.setItem("accessToken", response.data.accessToken);
+    return response.data.accessToken;
   } catch (error) {
-    console.error("Error refreshing access token:", error)
-    window.location.href = "/login" // Redirect to login if refresh fails
+    console.error("Error refreshing access token:", error);
+    window.location.href = "/login"; // Redirect to login if refresh fails
   }
-}
+};
 
 const DonorDashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard")
-  const [user, setUser] = useState(null)
-  const [formData, setFormData] = useState({})
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
-
-  // Handle form submission for login
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (isSubmitted) return
-    setIsSubmitted(true)
-    setLoading(true)
-    setError("")
-
-    try {
-      const response = await axios.post("/auth/login", formData)
-      const { accessToken, refreshToken, user } = response.data
-
-      if (!accessToken || !refreshToken || !user || !user.name) {
-        throw new Error("Invalid response format from server.")
-      }
-
-      localStorage.setItem("accessToken", accessToken)
-      localStorage.setItem("refreshToken", refreshToken)
-      localStorage.setItem("userName", user.name)
-
-      navigate(`/${user.name}/dashboard`, { replace: true })
-    } catch (error) {
-      console.error("Login error:", error)
-      setError(error.response?.data?.message || error.message || "Login failed. Please try again.")
-    } finally {
-      setLoading(false)
-      setIsSubmitted(false)
-    }
-  }
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [user, setUser] = useState(null);
 
   // Fetch user data on mount
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        let token = localStorage.getItem("accessToken")
+        let token = localStorage.getItem("accessToken");
         const response = await axios.get("http://localhost:3000/api/auth/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        setUser(response.data)
+        });
+        setUser(response.data);
       } catch (error) {
-        console.error("Error fetching user data:", error)
+        console.error("Error fetching user data:", error);
         if (error.response?.status === 401) {
           // Attempt to refresh token
-          const newToken = await refreshAccessToken()
+          const newToken = await refreshAccessToken();
           if (newToken) {
             try {
               const response = await axios.get("http://localhost:3000/api/auth/profile", {
                 headers: {
                   Authorization: `Bearer ${newToken}`,
                 },
-              })
-              setUser(response.data)
+              });
+              setUser(response.data);
             } catch (retryError) {
-              console.error("Retry error after token refresh:", retryError)
-              window.location.href = "/login"
+              console.error("Retry error after token refresh:", retryError);
+              window.location.href = "/login";
             }
           }
         } else {
-          window.location.href = "/login"
+          window.location.href = "/login";
         }
       }
-    }
+    };
 
-    fetchUserData()
-  }, [])
+    fetchUserData();
+  }, []);
 
-  // Mock data for the dashboard (unchanged)
+  // Handle notifications click
+  const handleNotificationsClick = () => {
+    setActiveTab("dashboard"); // Show notifications section on dashboard tab
+  };
+
+  // Handle messages click
+  const handleMessagesClick = () => {
+    setActiveTab("messages");
+  };
+
+  // Mock data for the dashboard
   const upcomingAppointments = [
     {
       id: 1,
@@ -130,7 +104,7 @@ const DonorDashboard = () => {
       address: "456 Health Blvd",
       status: "pending",
     },
-  ]
+  ];
 
   const donationHistory = [
     {
@@ -157,7 +131,7 @@ const DonorDashboard = () => {
       amount: "450ml",
       recipient: "Anonymous",
     },
-  ]
+  ];
 
   const notifications = [
     {
@@ -178,7 +152,7 @@ const DonorDashboard = () => {
       message: "John D. thanks you for your donation",
       time: "3 days ago",
     },
-  ]
+  ];
 
   const bloodRequests = [
     {
@@ -205,9 +179,9 @@ const DonorDashboard = () => {
       distance: "5.7 miles",
       time: "5 hours ago",
     },
-  ]
+  ];
 
-  // Render functions (unchanged from second component)
+  // Render functions
   const renderDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2 space-y-6">
@@ -383,8 +357,8 @@ const DonorDashboard = () => {
                     notification.type === "urgent"
                       ? "bg-red-100"
                       : notification.type === "appointment"
-                        ? "bg-blue-100"
-                        : "bg-green-100"
+                      ? "bg-blue-100"
+                      : "bg-green-100"
                   }`}
                 >
                   {notification.type === "urgent" && <AlertCircle className="h-5 w-5 text-red-500" />}
@@ -401,7 +375,7 @@ const DonorDashboard = () => {
         </motion.div>
       </div>
     </div>
-  )
+  );
 
   const renderHistory = () => (
     <motion.div
@@ -469,7 +443,7 @@ const DonorDashboard = () => {
         </div>
       )}
     </motion.div>
-  )
+  );
 
   const renderMessages = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -590,7 +564,7 @@ const DonorDashboard = () => {
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderProfile = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -805,7 +779,7 @@ const DonorDashboard = () => {
         </motion.div>
       </div>
     </div>
-  )
+  );
 
   const renderSettings = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1015,52 +989,21 @@ const DonorDashboard = () => {
         </motion.div>
       </div>
     </div>
-  )
+  );
 
   // Show loading state while fetching user data
   if (!user) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center">
-              <Heart className="h-8 w-8 text-red-500 mr-2" />
-              <span className="font-bold text-xl text-gray-800">LifeLink</span>
-            </Link>
-
-            <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-gray-500 hover:text-red-500 transition-colors">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                  3
-                </span>
-              </button>
-
-              <button className="relative p-2 text-gray-500 hover:text-red-500 transition-colors">
-                <MessageSquare className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                  1
-                </span>
-              </button>
-
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-2">
-                  <User className="h-5 w-5 text-red-500" />
-                </div>
-                <span className="font-medium text-gray-800">{user.name}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <Navbar
+        username={user?.name}
+        onNotificationsClick={handleNotificationsClick}
+        onMessagesClick={handleMessagesClick}
+      />
+      <main className="container mx-auto px-4 py-8 pt-20">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
           <div className="md:w-64 flex-shrink-0">
@@ -1145,7 +1088,7 @@ const DonorDashboard = () => {
         </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default DonorDashboard
+export default DonorDashboard;

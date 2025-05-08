@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, User, MapPin, Search, ShoppingCart, X } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams,Link } from "react-router-dom";
 
 const BuyMedicine = () => {
     const { username } = useParams(); // Extract username from the URL
@@ -61,6 +61,9 @@ const BuyMedicine = () => {
     const handleRemoveFromCart = (medicineId) => {
         setCart((prevCart) => prevCart.filter((item) => item.id !== medicineId));
     };
+    const handleLogoOrHomeClick = () => {
+        return isLoggedIn && username ? `/${username}` : "/";
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -68,10 +71,11 @@ const BuyMedicine = () => {
             <header className="bg-white shadow-sm">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <Heart className="h-8 w-8 text-red-500 mr-2" />
-                            <span className="font-bold text-xl text-gray-800">LifeLink</span>
-                        </div>
+                        
+                            <Link to={handleLogoOrHomeClick()} className="flex items-center">
+                                <Heart className="h-8 w-8 text-red-500 mr-2" />
+                                <span className="font-bold text-xl text-gray-800">LifeLink</span>
+                            </Link>
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center">
                                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-2">

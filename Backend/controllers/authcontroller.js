@@ -1,22 +1,20 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-const User = require('../models/User');
+
+// controllers/authcontroller.js
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+const User = require("../models/User");
 dotenv.config();
 
 const jwtSecretKey = process.env.JWT_SECRET;
 const jwtRefreshSecretKey = process.env.JWT_REFRESH_SECRET_KEY;
 
 const generateAccessToken = (user) => {
-  return jwt.sign(
-    { _id: user._id, role: user.role }, // Payload
-    process.env.JWT_SECRET, // Secret key
-    { expiresIn: "15m" } // Token expiration
-  );
+  return jwt.sign({ _id: user._id, role: user.role }, jwtSecretKey, { expiresIn: "15m" });
 };
 
 const generateRefreshToken = (user) => {
-  return jwt.sign({ userId: user._id }, jwtRefreshSecretKey, { expiresIn: '7d' });
+  return jwt.sign({ userId: user._id }, jwtRefreshSecretKey, { expiresIn: "7d" });
 };
 
 const storeRefreshToken = async (userId, hashedToken) => {
@@ -106,6 +104,34 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+// exports.refreshToken = async (req, res) => {
+//   const { refreshToken } = req.body;
+
+//   if (!refreshToken) {
+//     return res.status(401).json({ message: "Refresh token is required." });
+//   }
+
+//   try {
+//     const decoded = jwt.verify(refreshToken, jwtRefreshSecretKey);
+//     const user = await User.findById(decoded.userId);
+//     if (!user) {
+//       return res.status(401).json({ message: "User not found." });
+//     }
+
+//     const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.refreshToken);
+//     if (!isRefreshTokenValid) {
+//       return res.status(401).json({ message: "Invalid refresh token." });
+//     }
+
+//     const newAccessToken = generateAccessToken(user);
+//     res.status(200).json({ accessToken: newAccessToken });
+//   } catch (error) {
+//     console.error("Error refreshing token:", error);
+//     res.status(401).json({ message: "Invalid or expired refresh token." });
+//   }
+// };
+
+// controllers/authcontroller.js
 exports.refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
 
@@ -114,8 +140,19 @@ exports.refreshToken = async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY);
-    const newAccessToken = jwt.sign({ _id: decoded._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+    const decoded = jwt.verify(refreshToken, jwtRefreshSecretKey);
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ message: "User not found." });
+    }
+
+    // Validate the refresh token against the hashed token in the database
+    const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!isRefreshTokenValid) {
+      return res.status(401).json({ message: "Invalid refresh token." });
+    }
+
+    const newAccessToken = generateAccessToken(user);
     res.status(200).json({ accessToken: newAccessToken });
   } catch (error) {
     console.error("Error refreshing token:", error);
@@ -125,11 +162,11 @@ exports.refreshToken = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password -refreshToken');
+    const users = await User.find().select("-password -refreshToken");
     res.status(200).json(users);
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ message: 'Failed to retrieve users: ' + error.message });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Failed to retrieve users: " + error.message });
   }
 };
 
@@ -158,14 +195,53 @@ exports.checkExistence = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const userId = req.auth._id; // Assuming `req.auth` contains the authenticated user's ID
-    const user = await User.findById(userId).select("-password -refreshToken"); // Exclude sensitive fields
+    const userId = req.auth._id;
+    const user = await User.findById(userId).select("-password -refreshToken");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
   } catch (error) {
     console.error("Error fetching user profile:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
+exports.registerDonor = async (req, res) => {
+  try {
+    const userId = req.auth._id; // From authenticateUser middleware
+    const { name, username, email, phone, medicalConditions } = req.body;
+
+    // Validate required fields
+    if (!name || !username || !email || !phone || !medicalConditions) {
+      return res.status(400).json({
+        message: "Name, username, email, phone, and medical conditions are required.",
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if user is already a donor
+    if (user.isDonor) {
+      return res.status(400).json({ message: "User is already registered as a donor." });
+    }
+
+    // Update user to donor status
+    user.name = name;
+    user.username = username;
+    user.email = email;
+    user.phone = phone;
+    user.isDonor = true;
+    user.donorEligibility = medicalConditions;
+    await user.save();
+
+    res.status(200).json({ message: "Successfully registered as a donor." });
+  } catch (error) {
+    console.error("Error registering donor:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
