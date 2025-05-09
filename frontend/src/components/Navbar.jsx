@@ -101,6 +101,13 @@ function Navbar({ username }) {
                   Be a Donor
                 </NavLink>
                 <NavLink
+                  to={isLoggedIn && username ? `/${username}/medicine-exchange` : "/"}
+                  onClick={(e) => handleProtectedLink(e, `/${username}/be-a-donor`)}
+                  className="text-gray-600 hover:text-red-500 transition-colors"
+                >
+                  Exchange Medicine
+                </NavLink>
+                <NavLink
                   to={handleAboutClick()}
                   className="text-gray-600 hover:text-red-500 transition-colors"
                 >

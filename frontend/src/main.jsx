@@ -15,6 +15,7 @@ import SetLocation from "./components/SetLocation.jsx";
 import AboutUs from "./components/AboutUs.jsx";
 import BuyMedicine from "./components/BuyMedicine.jsx";
 import BeADonorPage from "./components/BeADonorPage.jsx";
+import MedicineExchangePage from "./components/ExchangeMed.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
@@ -39,6 +40,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/:username" element={<App />} />
         <Route path="/:username/buy-medicine" element={<BuyMedicine />} />
         <Route path="/:username/be-a-donor" element={<BeADonorPage />} />
+        <Route path="/:username/medicine-exchange" element={<MedicineExchangePage />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>
